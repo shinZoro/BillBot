@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "agent": "./src/invoice_agent/bill.py:graph"
+  },
+  "env": ".env"
+}

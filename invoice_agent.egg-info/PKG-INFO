@@ -1,0 +1,21 @@
+Metadata-Version: 2.2
+Name: invoice-agent
+Version: 0.0.1
+Summary: Invoice parser and SQL query generator agent
+Author-email: Sandeep Kumar <sandeepindramohan@gmail.com>
+License: MIT
+Requires-Python: <4.0,>=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: langgraph>=0.2.6
+Requires-Dist: langchain>=0.2.14
+Requires-Dist: langchain-fireworks>=0.1.7
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: langchain-community>=0.2.17
+Requires-Dist: pytesseract
+Requires-Dist: opencv-python>=4.11.0.86
+Requires-Dist: groq
+Requires-Dist: langchain_groq
+Provides-Extra: dev
+Requires-Dist: mypy>=1.11.1; extra == "dev"
+Requires-Dist: ruff>=0.6.1; extra == "dev"

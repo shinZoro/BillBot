@@ -1,0 +1,7 @@
+pytesseract
+opencv-python
+groq
+langchain_groq
+langgraph
+langchain
+python-dotenv

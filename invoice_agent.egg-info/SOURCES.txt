@@ -1,0 +1,10 @@
+LICENSE
+README.md
+pyproject.toml
+invoice_agent.egg-info/PKG-INFO
+invoice_agent.egg-info/SOURCES.txt
+invoice_agent.egg-info/dependency_links.txt
+invoice_agent.egg-info/requires.txt
+invoice_agent.egg-info/top_level.txt
+src/invoice_agent/bill.py
+src/invoice_agent/database1.py

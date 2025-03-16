@@ -1,0 +1,13 @@
+langgraph>=0.2.6
+langchain>=0.2.14
+langchain-fireworks>=0.1.7
+python-dotenv>=1.0.1
+langchain-community>=0.2.17
+pytesseract
+opencv-python>=4.11.0.86
+groq
+langchain_groq
+
+[dev]
+mypy>=1.11.1
+ruff>=0.6.1

@@ -1,0 +1,50 @@
+[project]
+name = "invoice-agent"
+version = "0.0.1"
+description = "Invoice parser and SQL query generator agent"
+authors = [
+    { name = "Sandeep Kumar", email = "sandeepindramohan@gmail.com" },
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "langgraph>=0.2.6",
+    "langchain>=0.2.14",
+    "langchain-fireworks>=0.1.7",
+    "python-dotenv>=1.0.1",
+    "langchain-community>=0.2.17",
+    "pytesseract",
+    "opencv-python>=4.11.0.86",
+    "groq",
+    "langchain_groq",
+]
+
+
+[build-system]
+requires = ["setuptools>=73.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["invoice_agent", "bill"]
+
+[tool.setuptools.package-dir]
+"invoice_agent" = "src/invoice_agent"
+"bill" = "src/invoice_agent"
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[project.optional-dependencies]
+dev = ["mypy>=1.11.1", "ruff>=0.6.1"]
+
+
+[tool.ruff]
+lint.select = ["E", "F", "I", "D", "D401", "T201", "UP"]
+lint.ignore = ["UP006", "UP007", "UP035", "D417", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "UP"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
