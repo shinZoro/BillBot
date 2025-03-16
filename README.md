@@ -53,7 +53,7 @@ To begin, install the LangGraph CLI with the following command:
 
 ## **Usage**
 ### **Note:**
--By default, a set of invoice images from [Kaggle](10.34740/kaggle/dsv/9489831) has been preloaded into the database. If you wish to upload your own invoice data, simply place your images in the batch_1/ folder. When prompted during the LangGraph application setup, respond with 'yes' to populate the database with your new data.
+-By default, a set of invoice images from [Kaggle](https://www.kaggle.com/dsv/9489831) has been preloaded into the database. If you wish to upload your own invoice data, simply place your images in the batch_1/ folder. When prompted during the LangGraph application setup, respond with 'yes' to populate the database with your new data.
 
 
 ### **1. Extract and Store Invoice Data**
