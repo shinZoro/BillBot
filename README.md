@@ -5,7 +5,7 @@ Invoice-Agent is agentic webflow using langgraph that extracts, processes, and s
 ## **Features**
 
 - Extracts text from invoice images using **Tesseract OCR**.
-- Uses **Open soure model llama-3.3-70b-versatile LLM** to parse extracted text into structured invoice data.
+- Uses **Open soure model llama-3.3-70b-versatile with Groq LLM** to parse extracted text into structured invoice data.
 - Stores invoice details in an SQLite database.
 - Provides an **LLM-powered SQL query generator** to retrieve or modify invoice data.
 - Supports **automatic routing** between image processing and SQL query execution.
@@ -19,10 +19,7 @@ Invoice-Agent is agentic webflow using langgraph that extracts, processes, and s
 
 - Python **>=3.11**
 - `pip` installed on your system
-- Install dependencies:
-  ```sh
-  pip install -r requirements.txt
-  ```
+
 
 ### **Environment Variables**
 
@@ -34,15 +31,34 @@ GROQ_API_KEY=your_api_key_here
 
 ---
 
+### **Deploying app using LangGraph local server**
+
+- Install the LangGraph CLi
+To begin, install the LangGraph CLI with the following command:
+  ```sh
+  pip install --upgrade "langgraph-cli[inmem]"
+  ```
+
+- Install dependencies:
+- Navigate to your project directory (e.g., ...\...\langgraph_agent) and install the required dependencies:
+  ```sh
+  pip install -e .
+  ```
+
+- Start the LangGraph development server by running:
+  ```sh
+  langgraph dev
+  ```
+
+
 ## **Usage**
+### **Note:**
+-By default, a set of invoice images from [Kaggle](10.34740/kaggle/dsv/9489831) has been preloaded into the database. If you wish to upload your own invoice data, simply place your images in the batch_1/ folder. When prompted during the LangGraph application setup, respond with 'yes' to populate the database with your new data.
+
 
 ### **1. Extract and Store Invoice Data**
 
 - Place invoice images in the `batch_1/` folder.
-- Run the script and choose whether to process images:
-  ```sh
-  python bill.py
-  ```
 - The script will:
   1. Extract text from images.
   2. Parse extracted text using **Groq LLM**.
@@ -50,14 +66,22 @@ GROQ_API_KEY=your_api_key_here
 
 ### **2. Query the Invoice Database**
 
-- You can ask the AI to generate SQL queries for the stored invoices.
-- Example queries:
+- You can interact with the AI-powered system to generate SQL queries for managing invoices.
+
+- To add an invoice to the database or generate a summary from an image, use the following queries:
+  ```sh
+Add "image_path"
+Summarise "image_path" 
+  ```
+
+- Other Example queries:
+You can also other execute natural language queries, and the AI will convert them into SQL commands for execution:
   ```sh
   Show all unpaid invoices.
   Retrieve invoices issued by "XYZ Corp."
   Find invoices with an amount due greater than $500.
   ```
-- The AI will convert your natural language query into a SQL command and execute it.
+- This enables seamless invoice management through AI-driven SQL query generation and execution.
 
 ---
 
