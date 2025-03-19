@@ -44,6 +44,7 @@ image_folder = "batch_1"
 # List all invoice images
 image_files = [os.path.join(image_folder, f) for f in os.listdir(image_folder) if f.endswith(('.png', '.jpg', '.jpeg'))]
 
+
 # Function to extract text using OCR
 def extract_text_from_image(image_path):
     image = cv2.imread(image_path)
@@ -201,29 +202,38 @@ def execute_sql(sql_query, session=session):
 
 # Using LLM to summarise the actions taken by agent.
 summariser_prompt = PromptTemplate.from_template(
-    """
-    You are the end node of an AI agent, your job is to summarise whatever action the agent took.
+"""
+  You are the final response generator for an AI agent. Your task is to summarize the action taken by the agent based on the given user query and the result.
 
-    You will receive user query
-    {user_query}
+You will receive:
+1. **User Query:** {user_query}  
+2. **Result:** {result} (This could be either parsed invoice text or SQL query execution output)
 
-    and
-    result
-    {result}
-    after sql query execution,
+Your response should be:
+- **If the result contains parsed invoice text:** Generate a clear, structured summary of the invoice, including key details like invoice number, seller, amount due, tax percentage, and due date.  
+- **If the result is from an INSERT, UPDATE, or DELETE SQL query:** Provide a concise response indicating what was changed, added, or removed based on the user’s intent.  
+- **If the result is from a SELECT SQL query:** Convert the output (a dictionary) into a human-readable summary, ensuring clarity and relevance.
 
-    this can be
+### **Important Guidelines:**
+- Do **not** reveal technical details about how the process was executed.
+- Keep responses natural and conversational, as if a human is responding.
+- Provide only the final answer, avoiding unnecessary explanations.
 
-    either text stating the number of rows updated in case UPDATE , DELETE or INSERT query
-    in this case " You should reply based on query what was updated ? "
+### **Examples:**
+1. **User:** "Summarize this invoice."  
+   **Agent:** "Invoice #908485 from ABC Corp is due on 2024-05-10, with an amount payable of $500.00 and a 5% tax applied."  
 
-    or  in dictonary format in case of SELECT query
-    in this case "you should change this dictionary into human readable format? ."
+2. **User:** "Update the status of Invoice #123 to Paid."  
+   **Agent:** "Invoice #123 has been marked as Paid."  
 
-    Ensure that you give only final answers, user should only know the final output not how it was done
+3. **User:** "How much is due for Invoice #456?"  
+   **Agent:** "The amount due for Invoice #456 is $250.00."  
 
-    Also you should reply as a human would reply to query
-    """
+4. **User:** "Delete Invoice #789 from records."  
+   **Agent:** "Invoice #789 has been successfully removed from the database."  
+
+Ensure your response is **direct, user-friendly, and informative.**
+"""
 )
 
 summariser = summariser_prompt | GROQ_LLM | StrOutputParser()
@@ -262,16 +272,15 @@ class RouteQuery2(BaseModel):
 structured_llm_router2 = GROQ_LLM.with_structured_output(RouteQuery2)
 
 system = """
+Your task is to classify user queries into either "add" or "summarize".
 
-You are tasked with determining the appropriate action for user queries based on their content. Your goal is to classify each query into one of two categories: "add" or "summarize".
+### Instructions:
+- You will receive a **cleaned query**.
+- If the query asks about extracting or inserting invoice details, classify it as "add".
+- If the query asks about summarizing, explaining, or getting a brief overview, classify it as "summarize".
+- Use your best judgment if keywords are ambiguous.
 
-1. Analyze the content of the user query.
-2. If the query starts with any of the following keywords or phrases related to summarization: "summary", "Give summary", "Provide summary", "summarize", "summarise", "summarization", "recap", "brief", "extract", "overview", or any similar terms, route the query to "summarize".
-3. If the query consists solely of an image path (e.g., "C:/images/photo.jpg") or does not mention summarization at all, route it to "add".
-4. Ensure that your classification is based solely on the presence of the keywords or the format of the query, without inferring additional context or meaning.
-
-Provide a clear output indicating the category assigned to the query: "add" or "summarize".
-
+Respond ONLY with "add" or "summarize". No extra text.
 """
 route_prompt2 = ChatPromptTemplate.from_messages(
     [
@@ -306,6 +315,12 @@ def route_query1(state: ChatState):
 
 
 import re
+
+def preprocess_query(query):
+    """Removes any text inside double quotes and returns the cleaned query."""
+    cleaned_query = re.sub(r'"[^"]*"', '', query).strip()
+    return cleaned_query
+
 def extract_text_from_images(state: ChatState):
     """Extracts text from an uploaded invoice image."""
     user_query = state["messages"][-1]["content"]
@@ -320,7 +335,7 @@ def extract_text_from_images(state: ChatState):
     extracted_text = extract_text_from_image(image_path)
     state["messages"].append({"role": "assistant", "content": "Text extracted from the invoice."})
 
-    return {"extracted_text": extracted_text}
+    return {"user_query" : user_query, "extracted_text": extracted_text}
 
 def parse_invoice_with_groq(state: ChatState):
     """Parses invoice text into structured data."""
@@ -340,14 +355,18 @@ def parsed_sql_gen(state: ChatState):
 
 def route_query2(state: ChatState):
     """Decides whether to store the parsed invoice or summarize it."""
-    user_query = state["messages"][-1]["content"]
-    route_chain = route_chain2.invoke({"query": user_query})
+    user_query = state["user_query"]
+    cleaned_query = preprocess_query(user_query)
+
+    if not cleaned_query:
+        print("route_query2: Defaulting to 'add' due to empty query.")
+        return "add"
+    
+    route_chain = route_chain2.invoke({"query": cleaned_query})
 
     if route_chain.next == "add":
-        print("add")
         return "add"
     elif route_chain.next == "summarize":
-        print("summarize")
         return "summarize"
 
 def store_invoice(state: ChatState):
@@ -363,7 +382,7 @@ def sql_query_gen(state: ChatState):
     generated_sql = sql_query.invoke({"user_query": user_query})
 
     state["messages"].append({"role": "assistant", "content": "Generated SQL query."})
-    return {"generated_sql": generated_sql}
+    return {"user_query" : user_query, "generated_sql": generated_sql}
 
 def execute_sql_query(state: ChatState):
     """Executes a generated SQL query and retrieves results."""
@@ -374,7 +393,7 @@ def execute_sql_query(state: ChatState):
 
 def summarise(state: ChatState):
     """Summarizes either invoice data or SQL query results."""
-    user_query = state["messages"][-1]["content"]
+    user_query = state["user_query"]
     if "sql_results" in state:
         summary = summariser.invoke({"user_query": user_query, "result": state['sql_results']})
     else:
