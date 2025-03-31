@@ -1,6 +1,6 @@
 # BillBot
 
-BillBot is an agentic webflow using langgraph that extracts, processes, and stores invoice data using **OCR (Tesseract)** and **LLM-powered AI** (Groq LLM). It also allows users to generate and execute SQL queries on the invoice database.
+BillBot is an agentic workflow using langgraph that extracts, processes, and stores invoice data using **OCR (Tesseract)** and **LLM-powered AI** (Groq LLM). It also allows users to generate and execute SQL queries on the invoice database.
 
 ## **Features**
 
